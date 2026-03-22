@@ -14,7 +14,12 @@
       "WebFetch(domain:caraiva.com.br)",
       "Bash(curl -sL \"https://images.unsplash.com/photo-1580618432485-1e08c5039909?w=800&q=80\" -o /Users/adrianovarlotta/Projetos/workshop-ia/public/images/aldeia-porto-do-boi.jpg)",
       "Bash(curl -sL \"https://images.unsplash.com/photo-1604537529428-15bcbeecfe4d?w=800&q=80\" -o /Users/adrianovarlotta/Projetos/workshop-ia/public/images/aldeia-para-cura.jpg)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(sort -t/ -k6 -r)",
+      "Bash(git push:*)",
+      "Bash(gh api:*)",
+      "Bash(npx vercel:*)"
     ]
   }
 }
