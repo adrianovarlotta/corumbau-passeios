@@ -51,7 +51,8 @@ export const cancelDateSchema = z.object({
   customReason: z.string().optional(),
 })
 
-export type CheckoutInput = z.infer<typeof checkoutSchema>
+export type CheckoutInput = z.input<typeof checkoutSchema>
+export type CheckoutOutput = z.output<typeof checkoutSchema>
 export type OfflineBookingInput = z.infer<typeof offlineBookingSchema>
 export type TourInput = z.infer<typeof tourSchema>
 export type TourDateInput = z.infer<typeof tourDateSchema>

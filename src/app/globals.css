@@ -2,6 +2,48 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
+/* === GENERATED TOKENS START === */
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 218 32% 15%;
+    --card: 0 0% 100%;
+    --card-foreground: 218 32% 15%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 218 32% 15%;
+    --primary: 195 86% 30%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 40 69% 87%;
+    --secondary-foreground: 218 32% 15%;
+    --muted: 210 17% 98%;
+    --muted-foreground: 215 20% 65%;
+    --accent: 14 79% 57%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 214 32% 91%;
+    --input: 214 32% 91%;
+    --ring: 195 86% 30%;
+    --chart1: 195 86% 30%;
+    --chart2: 14 79% 57%;
+    --chart3: 153 40% 30%;
+    --chart4: 40 69% 87%;
+    --chart5: 226 71% 40%;
+
+    /* Sidebar */
+    --sidebar-background: 195 85% 22%;
+    --sidebar-foreground: 195 53% 94%;
+    --sidebar-primary: 0 0% 100%;
+    --sidebar-primary-foreground: 195 85% 22%;
+    --sidebar-accent: 195 86% 30%;
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 195 86% 30%;
+    --sidebar-ring: 195 53% 94%;
+
+    /* Radius */
+    --radius: 0.75rem;
+  }
+/* === GENERATED TOKENS END === */
+
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
