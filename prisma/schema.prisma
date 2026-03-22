@@ -1,0 +1,184 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Tour {
+  id          String       @id @default(cuid())
+  name        String
+  slug        String       @unique
+  description String
+  duration    String
+  includes    String[]
+  priceAdult  Decimal
+  priceChild  Decimal?
+  maxCapacity Int
+  category    TourCategory
+  images      String[]
+  isActive    Boolean      @default(true)
+  commissionRate Decimal   @default(0.10)
+  tourDates   TourDate[]
+  commissions Commission[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+}
+
+enum TourCategory {
+  BOAT
+  BUGGY
+  WHALE
+  EXPERIENCE
+}
+
+model TourDate {
+  id           String     @id @default(cuid())
+  tourId       String
+  tour         Tour       @relation(fields: [tourId], references: [id], onDelete: Cascade)
+  date         DateTime
+  time         String
+  totalSlots   Int
+  bookedSlots  Int        @default(0)
+  status       DateStatus @default(OPEN)
+  cancelReason String?
+  cancelledAt  DateTime?
+  bookings     Booking[]
+  createdAt    DateTime   @default(now())
+
+  @@index([tourId, date])
+  @@index([date, status])
+}
+
+enum DateStatus {
+  OPEN
+  FULL
+  CANCELLED
+}
+
+model Booking {
+  id             String        @id @default(cuid())
+  tourDateId     String
+  tourDate       TourDate      @relation(fields: [tourDateId], references: [id])
+  customerName   String
+  customerEmail  String
+  customerPhone  String
+  adults         Int           @default(1)
+  children       Int           @default(0)
+  unitPriceAdult Decimal
+  unitPriceChild Decimal       @default(0)
+  totalAmount    Decimal
+  paymentStatus  PaymentStatus @default(PENDING)
+  paymentMethod  PaymentMethod
+  paymentId      String?
+  source         BookingSource @default(ONLINE)
+  partnerCode    String?
+  voucherCode    String        @unique
+  checkedInAt    DateTime?
+  checkedInBy    String?
+  notes          String?
+  commissions    Commission[]
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  @@index([tourDateId])
+  @@index([customerEmail])
+  @@index([voucherCode])
+  @@index([paymentStatus])
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  REFUNDED
+  CANCELLED
+}
+
+enum PaymentMethod {
+  PIX
+  CREDIT_CARD
+  CASH
+  COURTESY
+}
+
+enum BookingSource {
+  ONLINE
+  OFFLINE
+  WHATSAPP
+}
+
+model Commission {
+  id          String         @id @default(cuid())
+  bookingId   String
+  booking     Booking        @relation(fields: [bookingId], references: [id])
+  tourId      String
+  tour        Tour           @relation(fields: [tourId], references: [id])
+  recipientId String
+  recipient   User           @relation(fields: [recipientId], references: [id])
+  amount      Decimal
+  percentage  Decimal
+  type        CommissionType
+  isPaid      Boolean        @default(false)
+  paidAt      DateTime?
+  createdAt   DateTime       @default(now())
+
+  @@index([bookingId])
+  @@index([recipientId])
+  @@index([isPaid])
+}
+
+enum CommissionType {
+  OPERATOR
+  SELLER
+}
+
+model User {
+  id          String       @id @default(cuid())
+  name        String
+  email       String       @unique
+  password    String?
+  role        UserRole
+  phone       String?
+  commissions Commission[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+}
+
+enum UserRole {
+  ADMIN
+  OPERATOR
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
