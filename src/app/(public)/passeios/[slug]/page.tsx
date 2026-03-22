@@ -20,7 +20,7 @@ const MOCK_TOUR = {
   priceAdult: 250,
   priceChild: 150,
   maxCapacity: 20,
-  images: ['https://placehold.co/1200x600/1E40AF/FFFFFF?text=Baleia+Jubarte'],
+  images: ['/images/baleia-jubarte.jpg'],
   includes: [
     'Transporte marítimo ida e volta',
     'Guia especializado bilíngue',

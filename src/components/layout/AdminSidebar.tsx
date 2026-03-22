@@ -42,7 +42,7 @@ export function AdminSidebar() {
         open ? 'translate-x-0' : '-translate-x-full'
       )}>
         <div className="h-14 flex items-center px-6 border-b border-sidebar-border">
-          <Link href="/admin" className="font-bold text-lg text-sidebar-primary">
+          <Link href="/admin" className="font-display font-bold text-lg text-sidebar-primary">
             Corumbau Admin
           </Link>
         </div>

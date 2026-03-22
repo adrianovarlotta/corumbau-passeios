@@ -9,49 +9,51 @@ export interface DesignTokens {
 
 export const tokens: DesignTokens = {
   colors: {
-    // Brand
-    brandOcean: '#0B6E8E',
-    brandOceanLight: '#E8F4F8',
-    brandOceanDark: '#084E66',
-    brandSand: '#F5E6C8',
-    brandCoral: '#E8643C',
-    brandForest: '#2D6A4F',
+    // Brand — Deep Ocean + Golden Sand
+    brandOcean: '#0C4A6E',
+    brandOceanLight: '#E0F2FE',
+    brandOceanDark: '#172554',
+    brandSky: '#0EA5E9',
+    brandGold: '#EAB308',
+    brandGoldLight: '#FEF9C3',
+    brandGoldDark: '#CA8A04',
+    brandSand: '#FDE68A',
 
     // Semantic
-    background: '#FFFFFF',
-    foreground: '#1A2332',
+    background: '#F8FAFC',
+    foreground: '#172554',
     card: '#FFFFFF',
-    cardForeground: '#1A2332',
+    cardForeground: '#172554',
     popover: '#FFFFFF',
-    popoverForeground: '#1A2332',
-    primary: '#0B6E8E',
-    primaryForeground: '#FFFFFF',
-    secondary: '#F5E6C8',
-    secondaryForeground: '#1A2332',
-    muted: '#F8F9FA',
-    mutedForeground: '#94A3B8',
-    accent: '#E8643C',
-    accentForeground: '#FFFFFF',
+    popoverForeground: '#172554',
+    primary: '#0C4A6E',
+    primaryForeground: '#FFFBEB',
+    secondary: '#FDE68A',
+    secondaryForeground: '#172554',
+    muted: '#F1F5F9',
+    mutedForeground: '#64748B',
+    accent: '#EAB308',
+    accentForeground: '#172554',
     destructive: '#EF4444',
     destructiveForeground: '#FFFFFF',
-    border: '#E2E8F0',
-    input: '#E2E8F0',
-    ring: '#0B6E8E',
-    chart1: '#0B6E8E',
-    chart2: '#E8643C',
+    border: '#DBEAFE',
+    input: '#DBEAFE',
+    ring: '#0C4A6E',
+    chart1: '#0C4A6E',
+    chart2: '#EAB308',
     chart3: '#2D6A4F',
-    chart4: '#F5E6C8',
-    chart5: '#1E40AF',
+    chart4: '#FDE68A',
+    chart5: '#0EA5E9',
 
     // Surface
-    surface: '#F8F9FA',
+    surface: '#F1F5F9',
     surfaceElevated: '#FFFFFF',
     borderSubtle: '#F1F5F9',
 
     // Text
-    textPrimary: '#1A2332',
-    textSecondary: '#4A5568',
-    textMuted: '#94A3B8',
+    textPrimary: '#172554',
+    textSecondary: '#475569',
+    textMuted: '#64748B',
     textInverse: '#FFFFFF',
 
     // Status
@@ -61,8 +63,8 @@ export const tokens: DesignTokens = {
     warningLight: '#FEF3C7',
     error: '#EF4444',
     errorLight: '#FEE2E2',
-    info: '#3B82F6',
-    infoLight: '#DBEAFE',
+    info: '#0EA5E9',
+    infoLight: '#E0F2FE',
 
     // Tour Categories
     whale: '#1E40AF',
@@ -72,19 +74,19 @@ export const tokens: DesignTokens = {
   },
 
   sidebar: {
-    background: '#084E66',
-    foreground: '#E8F4F8',
-    primary: '#FFFFFF',
-    primaryForeground: '#084E66',
-    accent: '#0B6E8E',
-    accentForeground: '#FFFFFF',
-    border: '#0B6E8E',
-    ring: '#E8F4F8',
+    background: '#172554',
+    foreground: '#E2E8F0',
+    primary: '#EAB308',
+    primaryForeground: '#172554',
+    accent: '#1E3A5F',
+    accentForeground: '#FFFBEB',
+    border: '#1E3A5F',
+    ring: '#EAB308',
   },
 
   typography: {
-    fontDisplay: '"Playfair Display", Georgia, serif',
-    fontBody: '"Inter", system-ui, -apple-system, sans-serif',
+    fontDisplay: '"Cormorant Garamond", Georgia, "Times New Roman", serif',
+    fontBody: '"Nunito", system-ui, -apple-system, sans-serif',
     fontMono: '"JetBrains Mono", "Fira Code", monospace',
 
     sizeXs: '0.75rem',
@@ -129,10 +131,11 @@ export const tokens: DesignTokens = {
 
   shadows: {
     sm: '0 1px 2px 0 rgb(0 0 0 / 0.05)',
-    md: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
-    lg: '0 10px 15px -3px rgb(0 0 0 / 0.1)',
-    xl: '0 20px 25px -5px rgb(0 0 0 / 0.1)',
-    card: '0 2px 8px 0 rgb(11 110 142 / 0.08)',
+    md: '0 4px 6px -1px rgb(0 0 0 / 0.07), 0 2px 4px -2px rgb(0 0 0 / 0.05)',
+    lg: '0 10px 15px -3px rgb(0 0 0 / 0.08), 0 4px 6px -4px rgb(0 0 0 / 0.04)',
+    xl: '0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.05)',
+    card: '0 2px 12px 0 rgb(12 74 110 / 0.06)',
+    gold: '0 4px 14px 0 rgb(234 179 8 / 0.25)',
   },
 }
 
