@@ -13,8 +13,8 @@ import { QuantitySelector } from '@/components/booking/QuantitySelector'
 import { PriceSummary } from '@/components/booking/PriceSummary'
 import { PaymentToggle } from '@/components/payment/PaymentToggle'
 import { checkoutSchema, type CheckoutInput } from '@/lib/validations'
-import { Loader2, ArrowLeft } from 'lucide-react'
-import Link from 'next/link'
+import { Loader2 } from 'lucide-react'
+import { BackButton } from '@/components/navigation/BackButton'
 
 // TODO: Replace with TanStack Query hook (fetch from /api/tours/[slug])
 const MOCK_TOUR = {
@@ -111,6 +111,7 @@ export default function CheckoutPage() {
     setError(null)
 
     try {
+      // 1. Create booking
       const res = await fetch('/api/bookings', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -123,7 +124,34 @@ export default function CheckoutPage() {
       }
 
       const { data: booking } = await res.json()
-      router.push(`/voucher/${booking.voucherCode}`)
+
+      // 2. Initiate payment based on method
+      if (data.paymentMethod === 'PIX') {
+        // Redirect to Pix payment page (which will generate QR code)
+        router.push(`/pagamento/pix?bookingId=${booking.id}`)
+      } else {
+        // Create Mercado Pago checkout preference and redirect
+        const cardRes = await fetch('/api/payment/card', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ bookingId: booking.id }),
+        })
+
+        if (!cardRes.ok) {
+          const cardBody = await cardRes.json()
+          throw new Error(cardBody.error || 'Erro ao iniciar pagamento')
+        }
+
+        const { data: cardData } = await cardRes.json()
+
+        // Redirect to Mercado Pago checkout (sandbox or production)
+        const redirectUrl = cardData.sandboxInitPoint || cardData.initPoint
+        if (redirectUrl) {
+          window.location.href = redirectUrl
+        } else {
+          throw new Error('URL de pagamento não disponível')
+        }
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro inesperado')
       setSubmitting(false)
@@ -137,26 +165,15 @@ export default function CheckoutPage() {
         <p className="text-muted-foreground mt-2">
           Selecione uma data disponivel na pagina do passeio.
         </p>
-        <Link
-          href={`/passeios/${tour.slug}`}
-          className="text-primary underline mt-4 inline-block"
-        >
-          Voltar ao passeio
-        </Link>
+        <BackButton href={`/passeios/${tour.slug}`} label="Voltar ao passeio" className="mt-4 inline-flex" />
       </div>
     )
   }
 
   return (
     <div className="container px-4 py-8">
-      {/* Back link */}
-      <Link
-        href={`/passeios/${tour.slug}`}
-        className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground mb-6"
-      >
-        <ArrowLeft className="h-4 w-4" />
-        Voltar ao passeio
-      </Link>
+      {/* Back button */}
+      <BackButton href={`/passeios/${tour.slug}`} label="Voltar ao passeio" className="mb-6" />
 
       <h1 className="text-2xl lg:text-3xl font-bold mb-2">Finalizar Reserva</h1>
       <p className="text-muted-foreground mb-8">
@@ -308,7 +325,7 @@ export default function CheckoutPage() {
 
             <Button
               type="submit"
-              className="w-full h-12 text-base"
+              className="w-full h-12 text-base bg-accent text-accent-foreground hover:bg-amber-500 font-semibold"
               disabled={submitting}
             >
               {submitting ? (

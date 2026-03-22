@@ -11,6 +11,7 @@ import {
   LogOut,
   Menu,
   X,
+  Waves,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useState } from 'react'
@@ -29,20 +30,22 @@ export function AdminSidebar() {
   return (
     <>
       {/* Mobile toggle */}
-      <div className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-sidebar-background text-sidebar-foreground flex items-center h-14 px-4">
-        <Button variant="ghost" size="icon" onClick={() => setOpen(!open)} className="text-sidebar-foreground">
+      <div className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-[#172554] text-white flex items-center h-14 px-4">
+        <Button variant="ghost" size="icon" onClick={() => setOpen(!open)} className="text-white hover:bg-white/10">
           {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
         </Button>
-        <span className="ml-3 font-bold">Corumbau Admin</span>
+        <Waves className="ml-3 h-5 w-5 text-amber-400" />
+        <span className="ml-2 font-display font-bold">Corumbau Admin</span>
       </div>
 
       {/* Sidebar */}
       <aside className={cn(
-        'fixed inset-y-0 left-0 z-40 w-64 bg-sidebar-background text-sidebar-foreground flex flex-col transition-transform lg:translate-x-0',
+        'fixed inset-y-0 left-0 z-40 w-64 bg-[#172554] text-white flex flex-col transition-transform lg:translate-x-0',
         open ? 'translate-x-0' : '-translate-x-full'
       )}>
-        <div className="h-14 flex items-center px-6 border-b border-sidebar-border">
-          <Link href="/admin" className="font-display font-bold text-lg text-sidebar-primary">
+        <div className="h-14 flex items-center gap-3 px-6 border-b border-white/10">
+          <Waves className="h-5 w-5 text-amber-400 shrink-0" />
+          <Link href="/admin" className="font-display font-bold text-lg text-white">
             Corumbau Admin
           </Link>
         </div>
@@ -56,10 +59,10 @@ export function AdminSidebar() {
                 href={item.href}
                 onClick={() => setOpen(false)}
                 className={cn(
-                  'flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors',
+                  'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors',
                   isActive
-                    ? 'bg-sidebar-accent text-sidebar-accent-foreground font-medium'
-                    : 'text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent/50'
+                    ? 'bg-white/15 text-white font-medium shadow-sm'
+                    : 'text-white/60 hover:text-white hover:bg-white/10'
                 )}
               >
                 <item.icon className="h-4 w-4" />
@@ -69,8 +72,8 @@ export function AdminSidebar() {
           })}
         </nav>
 
-        <div className="p-3 border-t border-sidebar-border">
-          <button className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-sidebar-foreground/70 hover:text-sidebar-foreground w-full transition-colors">
+        <div className="p-3 border-t border-white/10">
+          <button className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-white/60 hover:text-white hover:bg-white/10 w-full transition-colors">
             <LogOut className="h-4 w-4" />
             Sair
           </button>

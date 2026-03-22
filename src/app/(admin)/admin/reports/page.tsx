@@ -3,9 +3,18 @@
 import { useState } from 'react'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Card, CardContent } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { KPICard } from '@/components/admin/KPICard'
 import { DollarSign, Users, TrendingUp, Percent } from 'lucide-react'
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+} from 'recharts'
 
 export default function AdminReportsPage() {
   const [dateFrom, setDateFrom] = useState('2026-03-01')
@@ -28,13 +37,11 @@ export default function AdminReportsPage() {
     { label: '20/03', value: 3600 },
   ]
 
-  const maxValue = Math.max(...chartData.map((d) => d.value))
-
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold">Relatorios</h1>
-        <p className="text-muted-foreground">Visao geral do desempenho da operacao</p>
+        <h1 className="text-2xl font-bold">Relatórios</h1>
+        <p className="text-muted-foreground">Visão geral do desempenho da operação</p>
       </div>
 
       <div className="flex items-end gap-4">
@@ -48,7 +55,7 @@ export default function AdminReportsPage() {
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="date-to">Ate</Label>
+          <Label htmlFor="date-to">Até</Label>
           <Input
             id="date-to"
             type="date"
@@ -61,10 +68,10 @@ export default function AdminReportsPage() {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <KPICard
           title="Faturamento"
-          value={`R$ ${kpis.revenue.toFixed(2).replace('.', ',')}`}
+          value={`R$ ${kpis.revenue.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`}
           trend="up"
           trendValue="+15%"
-          description="vs. periodo anterior"
+          description="vs. período anterior"
           icon={<DollarSign className="h-4 w-4" />}
         />
         <KPICard
@@ -72,55 +79,76 @@ export default function AdminReportsPage() {
           value={String(kpis.bookings)}
           trend="up"
           trendValue="+23"
-          description="vs. periodo anterior"
+          description="vs. período anterior"
           icon={<Users className="h-4 w-4" />}
         />
         <KPICard
-          title="Taxa de Ocupacao"
+          title="Taxa de Ocupação"
           value={`${kpis.occupancyRate}%`}
           trend="up"
           trendValue="+5%"
-          description="vs. periodo anterior"
+          description="vs. período anterior"
           icon={<Percent className="h-4 w-4" />}
         />
         <KPICard
-          title="Total Comissoes"
-          value={`R$ ${kpis.commissionTotal.toFixed(2).replace('.', ',')}`}
+          title="Total Comissões"
+          value={`R$ ${kpis.commissionTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`}
           trend="down"
           trendValue="-3%"
-          description="vs. periodo anterior"
+          description="vs. período anterior"
           icon={<TrendingUp className="h-4 w-4" />}
         />
       </div>
 
       <Card>
-        <CardContent className="p-6">
-          <h2 className="font-semibold mb-6">Faturamento no Periodo</h2>
-          <div className="flex items-end gap-3 h-48">
-            {chartData.map((d) => (
-              <div key={d.label} className="flex-1 flex flex-col items-center gap-2">
-                <span className="text-xs text-muted-foreground font-medium">
-                  R$ {(d.value / 1000).toFixed(1)}k
-                </span>
-                <div
-                  className="w-full bg-primary/80 rounded-t-md transition-all"
-                  style={{ height: `${(d.value / maxValue) * 100}%` }}
+        <CardHeader>
+          <CardTitle className="text-base">Faturamento no Período</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="h-64">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={chartData} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
+                <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                <XAxis
+                  dataKey="label"
+                  tick={{ fontSize: 12 }}
                 />
-                <span className="text-xs text-muted-foreground">{d.label}</span>
-              </div>
-            ))}
+                <YAxis
+                  tick={{ fontSize: 12 }}
+                  tickFormatter={(v: number) => `R$${(v / 1000).toFixed(1)}k`}
+                />
+                <Tooltip
+                  formatter={(value) => [
+                    `R$ ${Number(value).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`,
+                    'Faturamento',
+                  ]}
+                  contentStyle={{
+                    borderRadius: '8px',
+                    border: '1px solid hsl(var(--border))',
+                    backgroundColor: 'hsl(var(--card))',
+                  }}
+                />
+                <Bar
+                  dataKey="value"
+                  fill="#2563eb"
+                  radius={[4, 4, 0, 0]}
+                />
+              </BarChart>
+            </ResponsiveContainer>
           </div>
         </CardContent>
       </Card>
 
       <Card>
-        <CardContent className="p-6">
-          <h2 className="font-semibold mb-4">Detalhamento por Passeio</h2>
+        <CardHeader>
+          <CardTitle className="text-base">Detalhamento por Passeio</CardTitle>
+        </CardHeader>
+        <CardContent>
           <div className="space-y-3">
             {[
               { name: 'Passeio de Barco Corumbau', bookings: 98, revenue: 17640, occupancy: 82 },
               { name: 'Avistamento de Baleias', bookings: 72, revenue: 18000, occupancy: 90 },
-              { name: 'Buggy ate Caraiva', bookings: 85, revenue: 7650, occupancy: 71 },
+              { name: 'Buggy até Caraíva', bookings: 85, revenue: 7650, occupancy: 71 },
               { name: 'Mergulho nos Recifes', bookings: 42, revenue: 4200, occupancy: 65 },
               { name: 'Monte Pascoal', bookings: 15, revenue: 310, occupancy: 50 },
             ].map((tour) => (
@@ -130,8 +158,10 @@ export default function AdminReportsPage() {
                   <p className="text-xs text-muted-foreground">{tour.bookings} reservas</p>
                 </div>
                 <div className="text-right">
-                  <p className="font-semibold text-sm">R$ {tour.revenue.toFixed(2).replace('.', ',')}</p>
-                  <p className="text-xs text-muted-foreground">{tour.occupancy}% ocupacao</p>
+                  <p className="font-semibold text-sm">
+                    R$ {tour.revenue.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                  </p>
+                  <p className="text-xs text-muted-foreground">{tour.occupancy}% ocupação</p>
                 </div>
               </div>
             ))}

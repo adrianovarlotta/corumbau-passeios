@@ -1,256 +1,426 @@
-import Image from 'next/image'
-import { ButtonLink } from '@/components/ui/button-link'
-import { Anchor, Shield, Smartphone, Star } from 'lucide-react'
+'use client'
 
-const TOURS_PREVIEW = [
+import { Suspense } from 'react'
+import { useSearchParams, useRouter } from 'next/navigation'
+import Image from 'next/image'
+import { cn } from '@/lib/utils'
+import { ButtonLink } from '@/components/ui/button-link'
+import { Calendar, Clock, Users, Flame, Tag } from 'lucide-react'
+
+// ─── Featured tours (specific dates, admin-highlighted) ─────────────────────
+const FEATURED_TOURS = [
   {
-    name: 'Baleia Jubarte',
+    id: 'f1',
+    name: 'Mergulho nos Corais',
+    slug: 'mergulho-corais',
+    category: 'BOAT' as const,
+    price: 220,
+    originalPrice: null as number | null,       // null = no discount
+    description: 'Explore os recifes de corais de Corumbau com snorkel e mergulho guiado.',
+    image: '/images/mergulho-corais.jpg',
+    date: 'Dom, 22 Mar',
+    time: '09:00',
+    spotsLeft: 6,
+    totalSpots: 12,
+    tourDateId: 'feat-1',
+  },
+  {
+    id: 'f2',
+    name: 'Baleia Jubarte — Manhã',
     slug: 'baleia-jubarte',
+    category: 'WHALE' as const,
+    price: 199,
+    originalPrice: 250,                         // Was R$250, now R$199
+    description: 'Saída matinal para observação de baleias na região de Abrolhos.',
     image: '/images/baleia-jubarte.jpg',
+    date: 'Seg, 23 Mar',
+    time: '07:30',
+    spotsLeft: 4,
+    totalSpots: 20,
+    tourDateId: 'feat-2',
+  },
+  {
+    id: 'f3',
+    name: 'Baleia Jubarte — Tarde',
+    slug: 'baleia-jubarte',
+    category: 'WHALE' as const,
     price: 250,
-    tag: 'Mais Popular',
-    description: 'Observe as majestosas baleias jubarte em seu habitat natural',
-  },
-  {
-    name: 'Praia do Espelho',
-    slug: 'barco-espelho',
-    image: '/images/barco-espelho.jpg',
-    price: 180,
-    tag: 'Imperdível',
-    description: 'Navegue até a praia mais bonita da Bahia',
-  },
-  {
-    name: 'Buggy Costa das Baleias',
-    slug: 'buggy-costa',
-    image: '/images/buggy-costa.jpg',
-    price: 320,
-    tag: 'Aventura',
-    description: 'Explore praias desertas e cenários únicos',
-  },
-  {
-    name: 'Vivência com Pescadores',
-    slug: 'vivencia-pescadores',
-    image: '/images/vivencia-pescadores.jpg',
-    price: 150,
-    tag: 'Exclusivo',
-    description: 'Viva um dia na rotina dos pescadores artesanais',
+    originalPrice: null,
+    description: 'Passeio ao pôr do sol com chances de ver baleias e golfinhos.',
+    image: '/images/baleia-jubarte.jpg',
+    date: 'Seg, 23 Mar',
+    time: '14:00',
+    spotsLeft: 12,
+    totalSpots: 20,
+    tourDateId: 'feat-3',
   },
 ]
 
-export default function LandingPage() {
+// ─── Regular tour catalog ───────────────────────────────────────────────────
+const MOCK_TOURS = [
+  {
+    id: '1',
+    name: 'Baleia Jubarte',
+    slug: 'baleia-jubarte',
+    category: 'WHALE' as const,
+    price: 250,
+    description: 'Observe as majestosas baleias jubarte em seu habitat natural nas águas de Abrolhos.',
+    duration: '4 horas',
+    image: '/images/baleia-jubarte.jpg',
+  },
+  {
+    id: '5',
+    name: 'Mergulho nos Corais',
+    slug: 'mergulho-corais',
+    category: 'BOAT' as const,
+    price: 220,
+    description: 'Explore os recifes de corais de Corumbau com snorkel e mergulho guiado.',
+    duration: '3 horas',
+    image: '/images/mergulho-corais.jpg',
+  },
+  {
+    id: '2',
+    name: 'Barco Praia do Espelho',
+    slug: 'barco-espelho',
+    category: 'BOAT' as const,
+    price: 180,
+    description: 'Navegue até a praia mais bonita da Bahia com paradas para mergulho.',
+    duration: '6 horas',
+    image: '/images/barco-espelho.jpg',
+  },
+  {
+    id: '3',
+    name: 'Buggy Costa das Baleias',
+    slug: 'buggy-costa',
+    category: 'BUGGY' as const,
+    price: 320,
+    description: 'Explore praias desertas e cenários únicos no litoral sul da Bahia.',
+    duration: 'Dia inteiro',
+    image: '/images/buggy-costa.jpg',
+  },
+  {
+    id: '4',
+    name: 'Vivência com Pescadores',
+    slug: 'vivencia-pescadores',
+    category: 'EXPERIENCE' as const,
+    price: 150,
+    description: 'Viva um dia na rotina dos pescadores artesanais de Corumbau.',
+    duration: '3 horas',
+    image: '/images/vivencia-pescadores.jpg',
+  },
+  {
+    id: '6',
+    name: 'Aldeia Porto do Boi',
+    slug: 'aldeia-porto-do-boi',
+    category: 'EXPERIENCE' as const,
+    price: 180,
+    description: 'Visite a aldeia Pataxó no encontro do rio com o mar. Dança Awê, pintura corporal, artesanato e culinária indígena.',
+    duration: '4 horas',
+    image: '/images/aldeia-porto-do-boi.jpg',
+  },
+  {
+    id: '7',
+    name: 'Aldeia Pará-Cura',
+    slug: 'aldeia-para-cura',
+    category: 'EXPERIENCE' as const,
+    price: 200,
+    description: 'Vivência ritualística Pataxó com banho de ervas, defumação, cantos sagrados e conexão com a natureza.',
+    duration: '3 horas',
+    image: '/images/aldeia-para-cura.jpg',
+  },
+]
+
+const CATEGORIES = [
+  { value: 'ALL', label: 'Todos' },
+  { value: 'WHALE', label: '🐋 Baleias' },
+  { value: 'BOAT', label: '⛵ Barcos' },
+  { value: 'BUGGY', label: '🏖️ Buggy' },
+  { value: 'EXPERIENCE', label: '✨ Vivências' },
+]
+
+// ─── Featured Tour Card ─────────────────────────────────────────────────────
+function FeaturedCard({ tour }: { tour: typeof FEATURED_TOURS[0] }) {
+  const spotsPercentage = ((tour.totalSpots - tour.spotsLeft) / tour.totalSpots) * 100
+  const isAlmostFull = tour.spotsLeft <= 4
+  const hasDiscount = tour.originalPrice !== null && tour.originalPrice > tour.price
+  const discountPercent = hasDiscount
+    ? Math.round(((tour.originalPrice! - tour.price) / tour.originalPrice!) * 100)
+    : 0
+
   return (
-    <>
-      {/* Hero Section */}
-      <section className="relative min-h-[90vh] flex items-center overflow-hidden">
-        {/* Background Image */}
-        <div className="absolute inset-0">
-          <Image
-            src="/images/hero-corumbau.jpg"
-            alt="Praia de Corumbau"
-            fill
-            className="object-cover"
-            priority
-            sizes="100vw"
+    <div className="flex-shrink-0 w-[280px] bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+      {/* Image with gradient overlay */}
+      <div className="relative h-36 w-full">
+        <Image
+          src={tour.image}
+          alt={tour.name}
+          fill
+          className="object-cover"
+          sizes="280px"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+
+        {/* Date badge */}
+        <div className="absolute top-2.5 left-2.5 bg-white/90 backdrop-blur-sm rounded-lg px-2.5 py-1 flex items-center gap-1.5">
+          <Calendar className="h-3 w-3 text-primary" />
+          <span className="text-xs font-semibold text-primary">{tour.date}</span>
+        </div>
+
+        {/* Discount badge */}
+        {hasDiscount && (
+          <div className="absolute top-2.5 right-2.5 bg-emerald-500 text-white rounded-full px-2.5 py-0.5 flex items-center gap-1 shadow-md">
+            <Tag className="h-3 w-3" />
+            <span className="text-[10px] font-bold">-{discountPercent}%</span>
+          </div>
+        )}
+
+        {/* Hot badge if almost full (only when no discount badge) */}
+        {isAlmostFull && !hasDiscount && (
+          <div className="absolute top-2.5 right-2.5 bg-red-500 text-white rounded-full px-2 py-0.5 flex items-center gap-1">
+            <Flame className="h-3 w-3" />
+            <span className="text-[10px] font-bold">Últimas vagas</span>
+          </div>
+        )}
+
+        {/* Title on image */}
+        <div className="absolute bottom-2.5 left-2.5 right-2.5">
+          <h3 className="font-display text-base font-bold text-white leading-tight drop-shadow-md">
+            {tour.name}
+          </h3>
+        </div>
+      </div>
+
+      {/* Content */}
+      <div className="p-3.5">
+        <div className="flex items-center gap-3 text-xs text-muted-foreground mb-2.5">
+          <span className="flex items-center gap-1">
+            <Clock className="h-3 w-3" />
+            {tour.time}h
+          </span>
+          <span className="flex items-center gap-1">
+            <Users className="h-3 w-3" />
+            {tour.spotsLeft} vagas
+          </span>
+          {isAlmostFull && hasDiscount && (
+            <span className="flex items-center gap-1 text-red-500 font-medium">
+              <Flame className="h-3 w-3" />
+              Últimas!
+            </span>
+          )}
+        </div>
+
+        {/* Capacity bar */}
+        <div className="h-1.5 bg-muted rounded-full mb-3 overflow-hidden">
+          <div
+            className={cn(
+              'h-full rounded-full transition-all',
+              isAlmostFull ? 'bg-red-400' : 'bg-emerald-400'
+            )}
+            style={{ width: `${spotsPercentage}%` }}
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-sky-950/80 via-sky-900/60 to-transparent" />
-          <div className="absolute inset-0 bg-gradient-to-t from-sky-950/40 via-transparent to-transparent" />
         </div>
 
-        <div className="relative container px-4 py-20 lg:py-32">
-          <div className="max-w-2xl">
-            {/* Tag */}
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-400/20 backdrop-blur-sm border border-amber-400/30 mb-6">
-              <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
-              <span className="text-sm font-semibold text-amber-200 tracking-wide">
-                Temporada de Baleias Jubarte — Jul a Nov
+        <div className="flex items-center justify-between">
+          <div className="flex items-baseline gap-1.5">
+            <span className="font-display text-lg font-bold text-primary">
+              R$ {tour.price}
+            </span>
+            {hasDiscount && (
+              <span className="text-xs text-muted-foreground line-through">
+                R$ {tour.originalPrice}
               </span>
-            </div>
+            )}
+            <span className="text-xs font-normal text-muted-foreground">/pessoa</span>
+          </div>
+          <ButtonLink
+            href={`/passeios/${tour.slug}?tourDateId=${tour.tourDateId}`}
+            size="sm"
+            className="bg-accent text-accent-foreground hover:bg-amber-500 font-semibold text-xs px-4"
+          >
+            Reservar
+          </ButtonLink>
+        </div>
+      </div>
+    </div>
+  )
+}
 
-            <h1 className="font-display text-5xl lg:text-7xl font-bold text-white leading-[1.1] tracking-tight">
-              Experiências únicas no
-              <span className="block text-amber-300 mt-1">
-                paraíso do Corumbau
-              </span>
-            </h1>
+// ─── Main Content ───────────────────────────────────────────────────────────
+function CatalogContent() {
+  const searchParams = useSearchParams()
+  const router = useRouter()
+  const category = searchParams.get('category') || 'ALL'
 
-            <p className="mt-6 text-lg lg:text-xl text-blue-100/90 max-w-lg leading-relaxed">
-              Reserve online seus passeios de baleia jubarte, barco e buggy.
-              Sem filas, sem espera — garanta seu lugar na aventura.
-            </p>
+  const filtered = category === 'ALL'
+    ? MOCK_TOURS
+    : MOCK_TOURS.filter(t => t.category === category)
 
-            <div className="mt-10 flex flex-col sm:flex-row gap-4">
-              <ButtonLink
-                href="/passeios"
-                size="lg"
-                className="bg-amber-400 text-sky-950 hover:bg-amber-300 text-lg px-8 font-bold shadow-lg shadow-amber-400/25 transition-all hover:shadow-amber-400/40 hover:scale-[1.02]"
+  function handleCategoryChange(value: string) {
+    if (value === 'ALL') {
+      router.push('/')
+    } else {
+      router.push(`/?category=${value}`)
+    }
+  }
+
+  return (
+    <div className="pb-8 pt-4">
+      {/* ── Featured Section ── */}
+      <div className="px-4 mb-6">
+        <div className="flex items-center gap-2 mb-3">
+          <Flame className="h-4 w-4 text-red-500" />
+          <h2 className="font-display text-lg font-bold text-primary">
+            Próximas saídas
+          </h2>
+        </div>
+      </div>
+
+      {/* Horizontal scroll featured cards */}
+      <div className="-mx-0 px-4 mb-8">
+        <div className="flex gap-3 overflow-x-auto pb-3 scrollbar-none">
+          {FEATURED_TOURS.map(tour => (
+            <FeaturedCard key={tour.id} tour={tour} />
+          ))}
+          {/* End spacer for scroll */}
+          <div className="w-1 flex-shrink-0" />
+        </div>
+      </div>
+
+      {/* ── All Tours Section ── */}
+      <div className="px-4">
+        <h2 className="font-display text-lg font-bold text-primary mb-4">
+          Todos os passeios
+        </h2>
+
+        {/* Category filter pills */}
+        <div className="-mx-4 px-4 mb-5">
+          <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-none">
+            {CATEGORIES.map(cat => (
+              <button
+                key={cat.value}
+                onClick={() => handleCategoryChange(cat.value)}
+                className={cn(
+                  'flex-shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-all',
+                  category === cat.value
+                    ? 'bg-primary text-primary-foreground shadow-md'
+                    : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                )}
               >
-                Ver Passeios
-              </ButtonLink>
-              <ButtonLink
-                href="/passeios?category=WHALE"
-                size="lg"
-                variant="outline"
-                className="border-white/30 text-white hover:bg-white/10 backdrop-blur-sm text-lg px-8"
-              >
-                🐋 Baleias Jubarte
-              </ButtonLink>
-            </div>
-
-            {/* Social proof */}
-            <div className="mt-12 flex items-center gap-6">
-              <div className="flex -space-x-2">
-                {[1, 2, 3, 4, 5].map((i) => (
-                  <div
-                    key={i}
-                    className="w-10 h-10 rounded-full bg-gradient-to-br from-amber-300 to-amber-500 border-2 border-white/30 flex items-center justify-center text-xs font-bold text-sky-950"
-                  >
-                    {['JS', 'MA', 'PO', 'AC', 'RF'][i - 1]}
-                  </div>
-                ))}
-              </div>
-              <div>
-                <div className="flex gap-0.5">
-                  {[1, 2, 3, 4, 5].map((i) => (
-                    <Star key={i} className="h-4 w-4 fill-amber-400 text-amber-400" />
-                  ))}
-                </div>
-                <p className="text-sm text-blue-200/80 mt-0.5">
-                  +500 turistas satisfeitos
-                </p>
-              </div>
-            </div>
+                {cat.label}
+              </button>
+            ))}
           </div>
         </div>
-      </section>
 
-      {/* Tours Preview */}
-      <section className="py-20 lg:py-28 bg-warm-gradient">
-        <div className="container px-4">
-          <div className="text-center mb-14">
-            <p className="text-sm font-bold uppercase tracking-[0.2em] text-amber-600 mb-3">
-              Nossos Passeios
-            </p>
-            <h2 className="font-display text-4xl lg:text-5xl font-bold text-primary tracking-tight">
-              Escolha sua próxima aventura
-            </h2>
-            <p className="mt-4 text-muted-foreground text-lg max-w-xl mx-auto">
-              Do avistamento de baleias às praias mais bonitas da Bahia
-            </p>
+        {/* Tour list */}
+        {filtered.length === 0 ? (
+          <div className="text-center py-20">
+            <p className="text-4xl mb-3">🏖️</p>
+            <p className="font-display text-xl font-bold text-primary">Nenhum passeio disponível</p>
+            <p className="text-muted-foreground text-sm mt-1">Em breve teremos novidades nesta categoria.</p>
           </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {TOURS_PREVIEW.map((tour) => (
-              <a
-                key={tour.slug}
-                href={`/passeios/${tour.slug}`}
-                className="group relative bg-white rounded-2xl overflow-hidden shadow-card hover:shadow-xl transition-all duration-500 hover:-translate-y-2"
+        ) : (
+          <div className="flex flex-col gap-4 md:grid md:grid-cols-2 md:gap-5">
+            {filtered.map(tour => (
+              <div
+                key={tour.id}
+                className="flex gap-4 bg-white rounded-2xl p-3 shadow-sm hover:shadow-md transition-shadow"
               >
-                <div className="relative aspect-[4/3] overflow-hidden">
+                {/* Image */}
+                <div className="relative w-24 h-24 flex-shrink-0 rounded-xl overflow-hidden">
                   <Image
                     src={tour.image}
                     alt={tour.name}
                     fill
-                    className="object-cover transition-transform duration-700 group-hover:scale-110"
-                    sizes="(max-width: 768px) 100vw, 25vw"
+                    className="object-cover"
+                    sizes="96px"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
-                  <span className="absolute top-3 left-3 px-3 py-1 bg-amber-400 text-sky-950 text-xs font-bold rounded-full shadow-sm">
-                    {tour.tag}
-                  </span>
                 </div>
-                <div className="p-5">
-                  <h3 className="font-display text-xl font-bold text-primary group-hover:text-sky-700 transition-colors">
-                    {tour.name}
-                  </h3>
-                  <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
-                    {tour.description}
-                  </p>
-                  <div className="mt-4 flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">A partir de</span>
-                    <span className="font-display text-2xl font-bold text-primary">
-                      R$ {tour.price}<span className="text-sm font-normal text-muted-foreground">/pessoa</span>
+
+                {/* Content */}
+                <div className="flex flex-col flex-1 min-w-0 justify-between py-0.5">
+                  <div>
+                    <h2 className="font-display text-base font-bold text-primary leading-tight truncate">
+                      {tour.name}
+                    </h2>
+                    <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2 leading-relaxed">
+                      {tour.description}
+                    </p>
+                  </div>
+                  <div className="flex items-center justify-between mt-2">
+                    <span className="font-display text-lg font-bold text-primary">
+                      R$ {tour.price}
+                      <span className="text-xs font-normal text-muted-foreground">/pessoa</span>
                     </span>
+                    <ButtonLink
+                      href={`/passeios/${tour.slug}`}
+                      size="sm"
+                      className="bg-accent text-accent-foreground hover:bg-amber-500 font-semibold text-xs px-4"
+                    >
+                      Reservar
+                    </ButtonLink>
                   </div>
                 </div>
-              </a>
+              </div>
             ))}
           </div>
-
-          <div className="text-center mt-12">
-            <ButtonLink href="/passeios" size="lg" className="px-10 font-semibold">
-              Ver Todos os Passeios →
-            </ButtonLink>
-          </div>
-        </div>
-      </section>
-
-      {/* Features Section */}
-      <section className="py-20 lg:py-28 relative overflow-hidden">
-        <div className="absolute inset-0 bg-ocean-gradient" />
-        <div className="absolute inset-0 grain-overlay opacity-30" />
-
-        <div className="relative container px-4">
-          <div className="text-center mb-14">
-            <p className="text-sm font-bold uppercase tracking-[0.2em] text-amber-300 mb-3">
-              Por que reservar online?
-            </p>
-            <h2 className="font-display text-4xl lg:text-5xl font-bold text-white tracking-tight">
-              Simples, rápido e seguro
-            </h2>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto">
-            <FeatureCard
-              icon={<Anchor className="h-7 w-7" />}
-              title="Reserva Instantânea"
-              description="Escolha a data, pague com Pix ou cartão e receba seu voucher digital na hora."
-            />
-            <FeatureCard
-              icon={<Smartphone className="h-7 w-7" />}
-              title="Voucher Digital"
-              description="QR Code no celular. Sem papel, sem complicação no dia do embarque."
-            />
-            <FeatureCard
-              icon={<Shield className="h-7 w-7" />}
-              title="Garantia de Vaga"
-              description="Compre com antecedência e garanta seu lugar na temporada de baleias."
-            />
-          </div>
-        </div>
-      </section>
-
-      {/* CTA Section */}
-      <section className="py-20 lg:py-28 bg-warm-gradient">
-        <div className="container px-4 text-center">
-          <h2 className="font-display text-4xl lg:text-5xl font-bold text-primary tracking-tight">
-            Pronto para a aventura?
-          </h2>
-          <p className="text-muted-foreground text-lg mt-4 max-w-md mx-auto">
-            Explore nosso catálogo e reserve seu passeio em poucos cliques.
-          </p>
-          <div className="mt-10">
-            <ButtonLink
-              href="/passeios"
-              size="lg"
-              className="bg-accent text-accent-foreground hover:bg-amber-500 text-lg px-10 font-bold shadow-gold transition-all hover:scale-[1.02]"
-            >
-              Explorar Passeios →
-            </ButtonLink>
-          </div>
-        </div>
-      </section>
-    </>
+        )}
+      </div>
+    </div>
   )
 }
 
-function FeatureCard({ icon, title, description }: { icon: React.ReactNode; title: string; description: string }) {
+function CatalogSkeleton() {
   return (
-    <div className="text-center p-8 rounded-2xl bg-white/5 backdrop-blur-sm border border-white/10 hover:bg-white/10 transition-all duration-300">
-      <div className="w-14 h-14 rounded-xl bg-amber-400/20 flex items-center justify-center mx-auto mb-5 text-amber-300">
-        {icon}
+    <div className="pb-8 pt-4">
+      {/* Featured skeleton */}
+      <div className="px-4 mb-3">
+        <div className="h-6 w-40 bg-muted rounded-lg animate-pulse" />
       </div>
-      <h3 className="font-display text-xl font-bold text-white mb-2">{title}</h3>
-      <p className="text-sm text-blue-200/80 leading-relaxed">{description}</p>
+      <div className="px-4 mb-8">
+        <div className="flex gap-3 overflow-hidden">
+          {[1, 2, 3].map(i => (
+            <div key={i} className="flex-shrink-0 w-[280px] bg-white rounded-2xl overflow-hidden shadow-sm">
+              <div className="h-36 bg-muted animate-pulse" />
+              <div className="p-3.5 space-y-2">
+                <div className="h-3 w-24 bg-muted rounded animate-pulse" />
+                <div className="h-1.5 bg-muted rounded-full animate-pulse" />
+                <div className="h-6 w-20 bg-muted rounded animate-pulse" />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Catalog skeleton */}
+      <div className="px-4">
+        <div className="h-6 w-36 bg-muted rounded-lg mb-4 animate-pulse" />
+        <div className="flex gap-2 mb-5">
+          {[1, 2, 3, 4, 5].map(i => (
+            <div key={i} className="h-9 w-20 bg-muted rounded-full animate-pulse" />
+          ))}
+        </div>
+        <div className="flex flex-col gap-4">
+          {[1, 2, 3, 4].map(i => (
+            <div key={i} className="flex gap-4 bg-white rounded-2xl p-3 shadow-sm">
+              <div className="w-24 h-24 bg-muted rounded-xl animate-pulse flex-shrink-0" />
+              <div className="flex-1 space-y-2 py-1">
+                <div className="h-4 w-32 bg-muted rounded animate-pulse" />
+                <div className="h-3 w-full bg-muted rounded animate-pulse" />
+                <div className="h-6 w-20 bg-muted rounded animate-pulse mt-2" />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
+  )
+}
+
+export default function HomePage() {
+  return (
+    <Suspense fallback={<CatalogSkeleton />}>
+      <CatalogContent />
+    </Suspense>
   )
 }

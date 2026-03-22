@@ -1,18 +1,18 @@
 import type { Metadata } from "next"
-import { Cormorant_Garamond, Nunito, JetBrains_Mono } from "next/font/google"
+import { DM_Sans, Inter, JetBrains_Mono } from "next/font/google"
 import { Toaster } from "@/components/ui/sonner"
 import { TooltipProvider } from "@/components/ui/tooltip"
 import { QueryProvider } from "@/components/providers/QueryProvider"
 import "./globals.css"
 
-const nunito = Nunito({
-  variable: "--font-body",
+const dmSans = DM_Sans({
+  variable: "--font-display",
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
+  weight: ["400", "500", "600", "700", "800"],
 })
 
-const cormorant = Cormorant_Garamond({
-  variable: "--font-display",
+const inter = Inter({
+  variable: "--font-body",
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
 })
@@ -40,7 +40,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="pt-BR">
-      <body className={`${nunito.variable} ${cormorant.variable} ${jetbrainsMono.variable} font-sans antialiased`}>
+      <body className={`${inter.variable} ${dmSans.variable} ${jetbrainsMono.variable} font-sans antialiased`}>
         <QueryProvider>
           <TooltipProvider>
             {children}

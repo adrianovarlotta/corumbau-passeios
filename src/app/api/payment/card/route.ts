@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
-import { createPixPayment } from '@/lib/mercadopago'
+import { createCheckoutPreference } from '@/lib/mercadopago'
 
 export async function POST(request: NextRequest) {
   try {
@@ -23,33 +23,24 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Pagamento já confirmado', success: false }, { status: 400 })
     }
 
-    const result = await createPixPayment(
+    const result = await createCheckoutPreference(
       Number(booking.totalAmount),
       booking.id,
+      booking.tourDate.tour.name,
       booking.customerEmail,
       booking.customerName,
     )
 
-    // Update booking with Mercado Pago payment ID
-    await prisma.booking.update({
-      where: { id: bookingId },
-      data: { paymentId: result.paymentId },
-    })
-
     return NextResponse.json({
       data: {
-        paymentId: result.paymentId,
-        status: result.status,
-        qrCode: result.pixQrCode,
-        qrCodeBase64: result.pixQrCodeBase64,
-        copyPaste: result.pixCopyPaste,
-        ticketUrl: result.ticketUrl,
-        expiresAt: new Date(Date.now() + 30 * 60 * 1000).toISOString(),
+        preferenceId: result.preferenceId,
+        initPoint: result.initPoint,
+        sandboxInitPoint: result.sandboxInitPoint,
       },
       success: true,
     })
   } catch (error) {
-    console.error('Failed to create Pix payment:', error)
-    return NextResponse.json({ error: 'Erro ao gerar pagamento Pix', success: false }, { status: 500 })
+    console.error('Failed to create checkout preference:', error)
+    return NextResponse.json({ error: 'Erro ao criar pagamento por cartão', success: false }, { status: 500 })
   }
 }

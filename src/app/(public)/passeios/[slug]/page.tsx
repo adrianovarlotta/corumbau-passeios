@@ -1,12 +1,11 @@
 import Image from 'next/image'
 import { Badge } from '@/components/ui/badge'
-import { Card, CardContent } from '@/components/ui/card'
 import { ButtonLink } from '@/components/ui/button-link'
 import { TourCategoryBadge } from '@/components/tour/TourCategoryBadge'
-import { SlotsWarning } from '@/components/ui/SlotsWarning'
 import { EmptyState } from '@/components/ui/EmptyState'
+import { BackButton } from '@/components/navigation/BackButton'
 import { cn } from '@/lib/utils'
-import { Clock, Users, CheckCircle, CalendarDays } from 'lucide-react'
+import { Clock, Users, CheckCircle, CalendarDays, MapPin, AlertTriangle } from 'lucide-react'
 
 // TODO: Replace with TanStack Query hook (useQuery + fetch from /api/tours/[slug])
 const MOCK_TOUR = {
@@ -78,6 +77,17 @@ function formatCurrency(value: number): string {
   return `R$ ${value.toFixed(2).replace('.', ',')}`
 }
 
+// Group dates by day for better visual
+function groupDatesByDay(dates: typeof MOCK_TOUR.tourDates) {
+  const groups: Record<string, typeof dates> = {}
+  dates.forEach(td => {
+    const key = td.date.split('T')[0]
+    if (!groups[key]) groups[key] = []
+    groups[key].push(td)
+  })
+  return Object.entries(groups)
+}
+
 export default async function TourDetailPage({
   params,
 }: {
@@ -89,139 +99,185 @@ export default async function TourDetailPage({
   const tour = MOCK_TOUR.slug === slug ? MOCK_TOUR : MOCK_TOUR
 
   const hasDates = tour.tourDates.length > 0
+  const groupedDates = groupDatesByDay(tour.tourDates)
 
   return (
-    <div className="container px-4 py-8">
-      {/* Hero Image */}
-      <div className="relative aspect-[2/1] w-full overflow-hidden rounded-2xl mb-8">
-        <Image
-          src={tour.images[0]}
-          alt={tour.name}
-          fill
-          className="object-cover"
-          sizes="(max-width: 768px) 100vw, 1200px"
-          priority
-        />
-      </div>
+    <div className="px-4 py-6 max-w-5xl mx-auto">
+      <BackButton href="/" label="Voltar aos passeios" className="mb-4" />
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Main Content */}
-        <div className="lg:col-span-2 space-y-8">
-          {/* Title & Category */}
-          <div>
-            <TourCategoryBadge category={tour.category} className="mb-3" />
-            <h1 className="text-3xl lg:text-4xl font-bold">{tour.name}</h1>
-            <div className="flex items-center gap-4 mt-3 text-muted-foreground">
-              <span className="flex items-center gap-1.5">
-                <Clock className="h-4 w-4" />
-                {tour.duration}
-              </span>
-              <span className="flex items-center gap-1.5">
-                <Users className="h-4 w-4" />
-                Até {tour.maxCapacity} pessoas
-              </span>
-            </div>
-          </div>
-
-          {/* Description */}
-          <div>
-            <h2 className="text-xl font-semibold mb-3">Sobre o passeio</h2>
-            <p className="text-muted-foreground leading-relaxed">
-              {tour.description}
-            </p>
-          </div>
-
-          {/* Inclusions */}
-          <div>
-            <h2 className="text-xl font-semibold mb-3">O que está incluso</h2>
-            <ul className="space-y-2">
-              {tour.includes.map((item) => (
-                <li key={item} className="flex items-center gap-2 text-muted-foreground">
-                  <CheckCircle className="h-4 w-4 text-primary flex-shrink-0" />
-                  {item}
-                </li>
-              ))}
-            </ul>
-          </div>
+      {/* ── Hero: Mobile = stacked, Desktop = side by side ── */}
+      <div className="flex flex-col lg:flex-row lg:gap-8 mb-8">
+        {/* Image — contained on desktop */}
+        <div className="relative aspect-[4/3] lg:aspect-[3/2] w-full lg:w-1/2 overflow-hidden rounded-2xl flex-shrink-0">
+          <Image
+            src={tour.images[0]}
+            alt={tour.name}
+            fill
+            className="object-cover"
+            sizes="(max-width: 1024px) 100vw, 50vw"
+            priority
+          />
         </div>
 
-        {/* Sidebar — Pricing & Dates */}
-        <div className="space-y-6">
-          {/* Price Card */}
-          <Card>
-            <CardContent className="p-6">
-              <p className="text-sm text-muted-foreground mb-1">A partir de</p>
-              <p className="text-3xl font-bold text-primary">
+        {/* Info — alongside image on desktop */}
+        <div className="mt-5 lg:mt-0 lg:flex lg:flex-col lg:justify-center space-y-4">
+          <TourCategoryBadge category={tour.category} />
+          <h1 className="font-display text-2xl lg:text-3xl font-bold text-primary leading-tight">
+            {tour.name}
+          </h1>
+
+          <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
+            <span className="flex items-center gap-1.5">
+              <Clock className="h-4 w-4" />
+              {tour.duration}
+            </span>
+            <span className="flex items-center gap-1.5">
+              <Users className="h-4 w-4" />
+              Até {tour.maxCapacity} pessoas
+            </span>
+            <span className="flex items-center gap-1.5">
+              <MapPin className="h-4 w-4" />
+              Corumbau, BA
+            </span>
+          </div>
+
+          {/* Price highlight */}
+          <div className="bg-primary/5 rounded-xl p-4 mt-2">
+            <p className="text-xs text-muted-foreground mb-0.5">A partir de</p>
+            <div className="flex items-baseline gap-2">
+              <span className="font-display text-3xl font-bold text-primary">
                 {formatCurrency(tour.priceAdult)}
+              </span>
+              <span className="text-sm text-muted-foreground">/ adulto</span>
+            </div>
+            {tour.priceChild != null && tour.priceChild > 0 && (
+              <p className="text-sm text-muted-foreground mt-1">
+                Criança (até 11 anos): {formatCurrency(tour.priceChild)}
               </p>
-              <p className="text-sm text-muted-foreground">por adulto</p>
-              {tour.priceChild != null && tour.priceChild > 0 && (
-                <p className="text-sm text-muted-foreground mt-1">
-                  Criança: {formatCurrency(tour.priceChild)}
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* ── Description + Includes ── */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        <div>
+          <h2 className="font-display text-lg font-bold text-primary mb-3">Sobre o passeio</h2>
+          <p className="text-sm text-muted-foreground leading-relaxed">
+            {tour.description}
+          </p>
+        </div>
+
+        <div>
+          <h2 className="font-display text-lg font-bold text-primary mb-3">O que está incluso</h2>
+          <ul className="space-y-2">
+            {tour.includes.map((item) => (
+              <li key={item} className="flex items-center gap-2 text-sm text-muted-foreground">
+                <CheckCircle className="h-4 w-4 text-emerald-500 flex-shrink-0" />
+                {item}
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+
+      {/* ── Available Dates ── */}
+      <div>
+        <h2 className="font-display text-lg font-bold text-primary mb-4 flex items-center gap-2">
+          <CalendarDays className="h-5 w-5" />
+          Escolha sua data
+        </h2>
+
+        {!hasDates ? (
+          <EmptyState
+            title="Sem datas disponíveis"
+            description="Novas datas serão publicadas em breve. Fique de olho!"
+          />
+        ) : (
+          <div className="space-y-4">
+            {groupedDates.map(([dayKey, dates]) => (
+              <div key={dayKey}>
+                {/* Day header */}
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
+                  {formatDate(dates[0].date)}
                 </p>
-              )}
-            </CardContent>
-          </Card>
 
-          {/* Available Dates */}
-          <div>
-            <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
-              <CalendarDays className="h-5 w-5" />
-              Datas Disponíveis
-            </h2>
+                {/* Time slots for this day */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                  {dates.map((td) => {
+                    const available = td.totalSlots - td.bookedSlots
+                    const isFull = available <= 0
+                    const isLow = !isFull && available <= 5
+                    const occupancy = Math.round((td.bookedSlots / td.totalSlots) * 100)
 
-            {!hasDates ? (
-              <EmptyState
-                title="Sem datas disponíveis"
-                description="Novas datas serão publicadas em breve. Fique de olho!"
-              />
-            ) : (
-              <div className="space-y-3">
-                {tour.tourDates.map((td) => {
-                  const available = td.totalSlots - td.bookedSlots
-                  const isFull = available <= 0
-
-                  return (
-                    <Card key={td.id} className={cn(isFull && 'opacity-60')}>
-                      <CardContent className="p-4 space-y-3">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <p className="font-semibold">{formatDate(td.date)}</p>
-                            <p className="text-sm text-muted-foreground">
+                    return (
+                      <div
+                        key={td.id}
+                        className={cn(
+                          'rounded-2xl border p-4 transition-all',
+                          isFull
+                            ? 'bg-muted/50 opacity-60 border-border'
+                            : 'bg-white border-border hover:border-accent hover:shadow-md',
+                        )}
+                      >
+                        {/* Time + Slots row */}
+                        <div className="flex items-center justify-between mb-3">
+                          <div className="flex items-center gap-2">
+                            <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                              <Clock className="h-5 w-5 text-primary" />
+                            </div>
+                            <span className="font-display text-xl font-bold text-primary">
                               {td.time}h
-                            </p>
+                            </span>
                           </div>
-                          <Badge variant={isFull ? 'secondary' : 'outline'}>
+                          <Badge variant={isFull ? 'secondary' : 'outline'} className="text-xs">
                             {isFull
                               ? 'Esgotado'
                               : `${available} vaga${available > 1 ? 's' : ''}`}
                           </Badge>
                         </div>
 
-                        {!isFull && available <= 5 && (
-                          <SlotsWarning available={available} />
+                        {/* Occupancy bar */}
+                        <div className="h-1.5 bg-muted rounded-full mb-3 overflow-hidden">
+                          <div
+                            className={cn(
+                              'h-full rounded-full transition-all',
+                              isFull ? 'bg-muted-foreground/30' :
+                              isLow ? 'bg-red-400' : 'bg-emerald-400'
+                            )}
+                            style={{ width: `${occupancy}%` }}
+                          />
+                        </div>
+
+                        {/* Warning or CTA */}
+                        {isLow && (
+                          <div className="flex items-center gap-1.5 text-xs text-amber-600 font-medium mb-2">
+                            <AlertTriangle className="h-3.5 w-3.5" />
+                            Últimas {available} vagas!
+                          </div>
                         )}
 
                         {isFull ? (
-                          <p className="text-sm text-center text-muted-foreground">
+                          <p className="text-xs text-center text-muted-foreground py-1">
                             Todas as vagas preenchidas
                           </p>
                         ) : (
                           <ButtonLink
                             href={`/passeios/${tour.slug}/checkout?tourDateId=${td.id}`}
-                            className="w-full"
+                            className="w-full bg-accent text-accent-foreground hover:bg-amber-500 font-semibold"
+                            size="sm"
                           >
                             Reservar
                           </ButtonLink>
                         )}
-                      </CardContent>
-                    </Card>
-                  )
-                })}
+                      </div>
+                    )
+                  })}
+                </div>
               </div>
-            )}
+            ))}
           </div>
-        </div>
+        )}
       </div>
     </div>
   )

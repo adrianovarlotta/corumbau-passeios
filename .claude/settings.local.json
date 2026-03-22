@@ -1,7 +1,20 @@
 {
   "permissions": {
     "allow": [
-      "Bash(brew list:*)"
+      "Bash(brew list:*)",
+      "Bash(npm install:*)",
+      "Bash(find /Users/adrianovarlotta/Projetos/workshop-ia -name .env* -type f)",
+      "Bash(ls -la /Users/adrianovarlotta/Projetos/workshop-ia/tailwind.config.* /Users/adrianovarlotta/Projetos/workshop-ia/src/app/globals.css)",
+      "Bash(ls -la /Users/adrianovarlotta/Projetos/workshop-ia/.env*)",
+      "WebSearch",
+      "Bash(curl -sL \"https://images.unsplash.com/photo-1546026423-cc4642628d2b?w=800&q=80\" -o /Users/adrianovarlotta/Projetos/workshop-ia/public/images/mergulho-corais.jpg)",
+      "Bash(npm run:*)",
+      "mcp__Claude_Preview__preview_start",
+      "WebFetch(domain:tabuamare.devtu.qzz.io)",
+      "WebFetch(domain:caraiva.com.br)",
+      "Bash(curl -sL \"https://images.unsplash.com/photo-1580618432485-1e08c5039909?w=800&q=80\" -o /Users/adrianovarlotta/Projetos/workshop-ia/public/images/aldeia-porto-do-boi.jpg)",
+      "Bash(curl -sL \"https://images.unsplash.com/photo-1604537529428-15bcbeecfe4d?w=800&q=80\" -o /Users/adrianovarlotta/Projetos/workshop-ia/public/images/aldeia-para-cura.jpg)",
+      "Bash(git add:*)"
     ]
   }
 }
